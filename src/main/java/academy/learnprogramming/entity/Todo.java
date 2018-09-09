@@ -7,11 +7,7 @@ package academy.learnprogramming.entity;
 
 import java.time.LocalDate;
 import javax.json.bind.annotation.JsonbDateFormat;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
+import javax.persistence.*;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -42,6 +38,8 @@ public class Todo extends AbstractEntity{
     private LocalDate dateCompleted;
     private LocalDate dateCreated;
 
+    @ManyToOne
+    private User todoOwner;
 
     @PrePersist
     private void init() {
