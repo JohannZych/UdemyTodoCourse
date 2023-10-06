@@ -13,9 +13,11 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Key;
+import java.security.Principal;
 
 
 @Authz
@@ -33,13 +35,40 @@ public class SecurityFilter implements ContainerRequestFilter {
         if (authString == null || authString.isEmpty() || !authString.startsWith("Bearer")) {
             throw new NotAuthorizedException(Response.status(Response.Status.UNAUTHORIZED).build());
         }
-        String token = authString.substring("Bearer ".length()).trim();
+        String token = authString.substring(SecurityUtil.BEARER.length()).trim();
         try {
             Key key = securityUtil.getSecurityKey();
             Jws<Claims> claimJws = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
+            SecurityContext originalContext = requestContext.getSecurityContext();
+            requestContext.setSecurityContext(new SecurityContext() {
+                @Override
+                public Principal getUserPrincipal() {
+                    return new Principal() {
+                        @Override
+                        public String getName() {
+                            return claimJws.getBody().getSubject();
+                        }
+                    };
+                }
 
-        }catch (Exception e) {
-            throw new NotAuthorizedException(Response.status(Response.Status.UNAUTHORIZED).build());
+                @Override
+                public boolean isUserInRole(String role) {
+                    return originalContext.isUserInRole(role);
+                }
+
+                @Override
+                public boolean isSecure() {
+                    return originalContext.isSecure();
+                }
+
+                @Override
+                public String getAuthenticationScheme() {
+                    return originalContext.getAuthenticationScheme();
+                }
+            });
+
+        } catch (Exception e) {
+            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
     }
 }

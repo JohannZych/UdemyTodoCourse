@@ -14,22 +14,33 @@ public class QueryService {
     @Inject
     EntityManager entityManager;
 
+    @Inject
+    private SecurityUtil securityUtil;
+
     public User findUserByEmail(String email) {
-        //TODO
-        return entityManager.createNamedQuery(User.FIND_USER_BY_EMAIL, User.class).setParameter("email", email)
-                .getResultList().get(0);
+        List<User> userList = entityManager.createNamedQuery(User.FIND_USER_BY_EMAIL, User.class).setParameter("email", email)
+                .getResultList();
+
+        if (!userList.isEmpty()) {
+            return userList.get(0);
+        }
+        return null;
     }
 
-    public boolean authenticateUser(String email, String password) {
-        //TODO
-        return false;
-    }
+//    public boolean authenticateUser(String email, String password) {
+//        User user = findUserByEmail(email);
+//        if (user == null) {
+//            return false;
+//        }
+//        return securityUtil
+//                .passwordsMatch(user.getPassword(), user.getSalt(), password);
+//    }
 
     public List countUserByEmail(String email) {
         return entityManager.createNativeQuery(
-                        "select count (id) from TodoUser where exists (select id from TodoUser where email = :email)"
+                        "select count (id) from TodoUser where exists (select id from TodoUser where email = :1)"
                 )
-                .setParameter("email", email)
+                .setParameter(1, email)
                 .getResultList();
     }
 
