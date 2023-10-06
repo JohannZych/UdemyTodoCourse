@@ -1,6 +1,7 @@
 package academy.learnprogramming.service;
 
-import com.sun.org.apache.xml.internal.security.algorithms.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.apache.shiro.codec.Hex;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Sha512Hash;
@@ -23,7 +24,14 @@ public class SecurityUtil {
     @Inject
     private QueryService queryService;
 
+    public static final String HASHED_PASSWORD_KEY = "hashedPassword";
+    public static final String SALT_KEY = "salt";
+    private Key securityKey;
 
+    @PostConstruct
+    private void init() {
+        securityKey = generateKey();
+    }
 
 
     public Date toDate(LocalDateTime localDateTime) {
@@ -41,8 +49,8 @@ public class SecurityUtil {
         ByteSource salt = getSalt();
 
         Map<String, String> credMap = new HashMap<>();
-        credMap.put("hashedPassword", hashAndSaltPassword(clearTextPassword, salt));
-        credMap.put("salt", salt.toHex());
+        credMap.put(HASHED_PASSWORD_KEY, hashAndSaltPassword(clearTextPassword, salt));
+        credMap.put(SALT_KEY, salt.toHex());
         return credMap;
 
 
@@ -62,4 +70,11 @@ public class SecurityUtil {
 
     }
 
+    private Key generateKey() {
+        return MacProvider.generateKey(SignatureAlgorithm.HS512);
+    }
+
+    public Key getSecurityKey() {
+        return securityKey;
+    }
 }
