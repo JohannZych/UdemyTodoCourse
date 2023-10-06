@@ -16,7 +16,6 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class TodoServiceTest {
 
-
     @Deployment
     public static JavaArchive createDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
@@ -39,15 +38,14 @@ public class TodoServiceTest {
 
     @Test
     public void updateTodo() {
-
     }
 
     @Test
     public void findToDoById() {
+
     }
 
     @Test
     public void getTodos() {
-
     }
 }

@@ -13,7 +13,6 @@ public abstract class AbstractEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected Long id;
 
-
     public Long getId() {
         return id;
     }
