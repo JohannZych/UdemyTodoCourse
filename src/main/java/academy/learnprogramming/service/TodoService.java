@@ -10,6 +10,8 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 
 @Stateless
 public class TodoService {
@@ -23,13 +25,8 @@ public class TodoService {
     @Inject
     private SecurityUtil securityUtil;
 
-    private String email;
-
-    @PostConstruct
-    private void init() {
-        //TODO
-        email = "";
-    }
+    @Context
+    private SecurityContext securityContext;
 
     public User saveUser(User user) {
 
@@ -50,7 +47,7 @@ public class TodoService {
 
     public Todo createTodo(Todo todo) {
         //Persist into db
-        User userByEmail = queryService.findUserByEmail(email);
+        User userByEmail = queryService.findUserByEmail(securityContext.getUserPrincipal().getName());
 
         if (userByEmail != null) {
             todo.setTodoOwner(userByEmail);
@@ -67,11 +64,11 @@ public class TodoService {
 
 
     public Todo findToDoById(Long id) {
-        return entityManager.find(Todo.class, id);
+        return queryService.findTodoById(id);
     }
 
 
     public List<Todo> getTodos() {
-        return entityManager.createQuery("SELECT t from Todo t", Todo.class).getResultList();
+        return queryService.getAllTodos();
     }
 }

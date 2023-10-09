@@ -1,15 +1,14 @@
 package academy.learnprograrmming.rest;
 
+import academy.learnprogramming.entity.User;
 import academy.learnprogramming.service.SecurityUtil;
+import academy.learnprogramming.service.TodoService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.security.Key;
 import java.time.LocalDateTime;
@@ -24,6 +23,9 @@ public class UserRest {
 
     @Context
     private UriInfo uriInfo;
+
+    @Inject
+    private TodoService todoService;
 
     @Path("login")
     @POST
@@ -49,5 +51,14 @@ public class UserRest {
                 .setAudience(uriInfo.getAbsolutePath().toString())
                 .setExpiration(securityUtil.toDate(LocalDateTime.now().plusMinutes(15)))
                 .signWith(SignatureAlgorithm.HS512, securityKey).compact();
+    }
+
+    @POST
+    @Path("create")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveUser(@NotNull User user) {
+        todoService.saveUser(user);
+        return Response.ok(user).build();
     }
 }
